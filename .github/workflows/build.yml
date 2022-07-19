@@ -112,6 +112,7 @@ jobs:
       with:
         arguments: ${{ inputs.ANDROID_PUBLISH_TASK }}
         gradle-version: wrapper
+        execution-only-caches: true
   publish_swift_package:
     needs: build
     runs-on: ubuntu-latest
