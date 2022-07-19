@@ -39,6 +39,12 @@ jobs:
   build:
     needs: check_prerequisites
     runs-on: superology-office
+    env:
+      LIBRARY_NAME: ${{ inputs.LIBRARY_NAME }}
+      REPO_NAME: ${{ inputs.REPO_NAME }}
+      SWIFT_PACKAGE_REPO: ${{ inputs.SWIFT_PACKAGE_REPO }}
+      XCFRAMEWORK_BUILD_TASK: ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+      ANDROID_PUBLISH_TASK: ${{ inputs.ANDROID_PUBLISH_TASK }}
     outputs:
       new_release_published: ${{ steps.semantic_release.outputs.new_release_published }}
       new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
