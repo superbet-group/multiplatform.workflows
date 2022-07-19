@@ -34,7 +34,7 @@ jobs:
       - name: Check if required repo structure is present
         uses: andstor/file-existence-action@v1.1.0
         with:
-          files: "swift-package,swift-package/Package.swift,js-package,js-package/package.json,shared,shared/build.gradle.kts"
+          files: "swift-package,swift-package/Package.swift,js-package,js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh"
           allow_failure: true
   build:
     needs: check_prerequisites
