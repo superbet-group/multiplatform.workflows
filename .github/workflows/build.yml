@@ -3,10 +3,10 @@ name: Multiplatform Build and Publish
 on:
   workflow_call:
     inputs:
-        LIBRARY_NAME:
+        REPO_NAME:
           required: true
           type: string
-        REPO_NAME:
+        IOS_LIBRARY_NAME:
           required: true
           type: string
         SWIFT_PACKAGE_REPO:
@@ -40,7 +40,7 @@ jobs:
     needs: check_prerequisites
     runs-on: superology-office
     env:
-      LIBRARY_NAME: ${{ inputs.LIBRARY_NAME }}
+      IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
       SWIFT_PACKAGE_REPO: ${{ inputs.SWIFT_PACKAGE_REPO }}
       XCFRAMEWORK_BUILD_TASK: ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
@@ -86,13 +86,13 @@ jobs:
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
         cp -R shared/build/XCFrameworks/release/* swift-package
-        sed -i '' "s/<libName>/${{ inputs.LIBRARY_NAME }}/g" swift-package/Package.swift
+        sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" swift-package/Package.swift
     - name: Zip iOS framework
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: papeloto/action-zip@v1
       with:
         files: shared/build/XCFrameworks/release/*
-        dest: swift-package/${{ inputs.LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
+        dest: swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
     - name: Upload Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: actions/upload-artifact@v2
