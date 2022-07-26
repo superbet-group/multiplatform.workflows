@@ -12,6 +12,7 @@ Repository hosting the Github Actions workflows used for building Multiplatform 
 
   - `IOS_LIBRARY_NAME`
   - `REPO_NAME`
+  - `SWIFT_PACKAGE_REPO_OWNER`
   - `SWIFT_PACKAGE_REPO`
   - `XCFRAMEWORK_BUILD_TASK`
   - `ANDROID_PUBLISH_TASK`

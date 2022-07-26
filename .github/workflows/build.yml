@@ -9,6 +9,9 @@ on:
         IOS_LIBRARY_NAME:
           required: true
           type: string
+        SWIFT_PACKAGE_REPO_OWNER:
+          required: true
+          type: string
         SWIFT_PACKAGE_REPO:
           required: true
           type: string
@@ -97,7 +100,7 @@ jobs:
       if: needs.build.outputs.new_release_published == 'true'
       uses: GuillaumeFalourd/clone-github-repo-action@v2
       with:
-        owner: superbet-group
+        owner: ${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
         repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
         access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Push new Swift package
