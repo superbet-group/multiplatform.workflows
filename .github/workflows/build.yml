@@ -34,7 +34,7 @@ jobs:
       - name: Check if required repo structure is present
         uses: andstor/file-existence-action@v1.1.0
         with:
-          files: "swift-package,swift-package/Package.swift,js-package,js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh"
+          files: "packages/swift-package,packages/swift-package/Package.swift,packages/js-package,packages/js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh"
           allow_failure: true
   build:
     needs: check_prerequisites
@@ -85,22 +85,22 @@ jobs:
     - name: Prepare Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
-        cp -R shared/build/XCFrameworks/release/* swift-package
-        sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" swift-package/Package.swift
+        cp -R shared/build/XCFrameworks/release/* packages/swift-package
+        sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
     - name: Zip iOS framework
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: papeloto/action-zip@v1
       with:
         files: shared/build/XCFrameworks/release/*
-        dest: swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
+        dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
     - name: Upload Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: actions/upload-artifact@v2
       with:
         name: swiftpackage
         path: |
-          swift-package
-          !swift-package/.gitignore
+          packages/swift-package
+          !packages/swift-package/.gitignore
         retention-days: 1
     - name: Publish Android library
       if: steps.semantic_release.outputs.new_release_published == 'true'
