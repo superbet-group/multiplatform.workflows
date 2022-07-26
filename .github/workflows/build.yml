@@ -111,7 +111,6 @@ jobs:
         git checkout -b $BRANCH
         rm -rf ./*
         cp -r ../packages/swift-package/* .
-        rm ./.gitignore
         git config user.email "multiplatform.github.action@superbet.com"
         git config user.name "Multiplatform Github Action"
         git add .
