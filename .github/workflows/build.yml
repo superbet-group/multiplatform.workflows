@@ -97,17 +97,17 @@ jobs:
         files: shared/build/XCFrameworks/release/*
         dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
     - name: Prepare Swift package repo
-      if: needs.build.outputs.new_release_published == 'true'
+      if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: GuillaumeFalourd/clone-github-repo-action@v2
       with:
         owner: ${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
         repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
         access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Push new Swift package
-      if: needs.build.outputs.new_release_published == 'true'
+      if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
         cd ${{ inputs.SWIFT_PACKAGE_REPO }}
-        BRANCH="release/${{ needs.build.outputs.new_release_version }}"
+        BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
         git checkout -b $BRANCH
         rm -rf ./*
         cp -r ../packages/swift-package/* .
@@ -115,9 +115,9 @@ jobs:
         git config user.email "multiplatform.github.action@superbet.com"
         git config user.name "Multiplatform Github Action"
         git add .
-        git commit -m "New version ${{ needs.build.outputs.new_release_version }} ✨"
+        git commit -m "New version ${{ steps.semantic_release.outputs.new_release_version }} ✨"
         git push --set-upstream origin $BRANCH
-        git tag ${{ needs.build.outputs.new_release_version }}
+        git tag ${{ steps.semantic_release.outputs.new_release_version }}
         git push --tags
     - name: Publish Android library
       if: steps.semantic_release.outputs.new_release_published == 'true'
