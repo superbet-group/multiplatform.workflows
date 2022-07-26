@@ -93,15 +93,29 @@ jobs:
       with:
         files: shared/build/XCFrameworks/release/*
         dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
-    - name: Upload Swift package
-      if: steps.semantic_release.outputs.new_release_published == 'true'
-      uses: actions/upload-artifact@v2
+    - name: Prepare Swift package repo
+      if: needs.build.outputs.new_release_published == 'true'
+      uses: GuillaumeFalourd/clone-github-repo-action@v2
       with:
-        name: swiftpackage
-        path: |
-          packages/swift-package
-          !packages/swift-package/.gitignore
-        retention-days: 1
+        owner: superbet-group
+        repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
+        access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
+    - name: Push new Swift package
+      if: needs.build.outputs.new_release_published == 'true'
+      run: |
+        cd ${{ inputs.SWIFT_PACKAGE_REPO }}
+        BRANCH="release/${{ needs.build.outputs.new_release_version }}"
+        git checkout -b $BRANCH
+        rm -rf ./*
+        cp -r ../packages/swift-package/* .
+        rm ./.gitignore
+        git config user.email "multiplatform.github.action@superbet.com"
+        git config user.name "Multiplatform Github Action"
+        git add .
+        git commit -m "New version ${{ needs.build.outputs.new_release_version }} ✨"
+        git push --set-upstream origin $BRANCH
+        git tag ${{ needs.build.outputs.new_release_version }}
+        git push --tags
     - name: Publish Android library
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: burrunan/gradle-cache-action@v1.12
@@ -113,35 +127,3 @@ jobs:
         arguments: ${{ inputs.ANDROID_PUBLISH_TASK }}
         gradle-version: wrapper
         execution-only-caches: true
-  publish_swift_package:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Swift package
-        if: needs.build.outputs.new_release_published == 'true'
-        uses: actions/download-artifact@v2
-        with:
-          name: swiftpackage
-          path: swift-package
-      - name: Prepare Swift package repo
-        if: needs.build.outputs.new_release_published == 'true'
-        uses: GuillaumeFalourd/clone-github-repo-action@v2
-        with:
-          owner: superbet-group
-          repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
-          access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
-      - name: Push new Swift package
-        if: needs.build.outputs.new_release_published == 'true'
-        run: |
-          cd ${{ inputs.SWIFT_PACKAGE_REPO }}
-          BRANCH="release/${{ needs.build.outputs.new_release_version }}"
-          git checkout -b $BRANCH
-          rm -rf ./*
-          cp -r ../swift-package/* .
-          git config user.email "multiplatform.github.action@superbet.com"
-          git config user.name "Multiplatform Github Action"
-          git add .
-          git commit -m "New version ${{ needs.build.outputs.new_release_version }} ✨"
-          git push --set-upstream origin $BRANCH
-          git tag ${{ needs.build.outputs.new_release_version }}
-          git push --tags
