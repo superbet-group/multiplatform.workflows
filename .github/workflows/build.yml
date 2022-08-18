@@ -41,7 +41,7 @@ jobs:
           allow_failure: true
   build:
     needs: check_prerequisites
-    runs-on: macos-latest
+    runs-on: superology-office
     env:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
@@ -57,14 +57,14 @@ jobs:
       with:
         distribution: zulu
         java-version: 11
-        # architecture: aarch64
+        architecture: aarch64
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
-    - uses: burrunan/gradle-cache-action@v1.12
-      name: Build (cached)
-      with:
-        arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
-        gradle-version: wrapper
+    # - uses: burrunan/gradle-cache-action@v1.12
+    #   name: Build (cached)
+    #   with:
+    #     arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+    #     gradle-version: wrapper
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
