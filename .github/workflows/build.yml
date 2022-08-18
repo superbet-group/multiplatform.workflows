@@ -81,9 +81,9 @@ jobs:
         GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Semantic Release
       id: semantic_release
-      uses: cycjimmy/semantic-release-action@v3.0.0
+      run: npx semantic-release
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Prepare Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
