@@ -41,7 +41,7 @@ jobs:
           allow_failure: true
   build:
     needs: check_prerequisites
-    runs-on: superology-office
+    runs-on: macos-latest
     env:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
