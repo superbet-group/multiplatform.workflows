@@ -1,36 +1,131 @@
-name: Publish
+name: Multiplatform Build and Publish
 
 on:
   workflow_call:
+    inputs:
+        REPO_NAME:
+          required: true
+          type: string
+        IOS_LIBRARY_NAME:
+          required: true
+          type: string
+        SWIFT_PACKAGE_REPO_OWNER:
+          required: true
+          type: string
+        SWIFT_PACKAGE_REPO:
+          required: true
+          type: string
+        XCFRAMEWORK_BUILD_TASK:
+          required: true
+          type: string
+        ANDROID_PUBLISH_TASK:
+          required: true
+          type: string
     secrets:
       NPM_TOKEN:
+        required: true
+      GH_PUBLISH_USERNAME:
         required: true
       GH_PUBLISH_TOKEN:
         required: true
 
 jobs:
+  check_prerequisites:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check if required repo structure is present
+        uses: andstor/file-existence-action@v1.1.0
+        with:
+          files: "packages/swift-package,packages/swift-package/Package.swift,packages/js-package,packages/js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh,.releaserc"
+          allow_failure: true
   build:
+    needs: check_prerequisites
     runs-on: superology-office
+    env:
+      IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
+      REPO_NAME: ${{ inputs.REPO_NAME }}
+      SWIFT_PACKAGE_REPO: ${{ inputs.SWIFT_PACKAGE_REPO }}
+      XCFRAMEWORK_BUILD_TASK: ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+      ANDROID_PUBLISH_TASK: ${{ inputs.ANDROID_PUBLISH_TASK }}
     outputs:
       new_release_published: ${{ steps.semantic_release.outputs.new_release_published }}
       new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
     steps:
     - uses: actions/checkout@v1
-    # - name: Setup Node
-    #   uses: actions/setup-node@v3
-    #   with:
-    #     node-version: '16.17.0'
-    #     registry-url: https://npm.pkg.github.com/
-    #     scope: '@company-name'
-    # - name: Setup npm registry
-    #   run: |
-    #     echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-    #     echo @company-name:registry=https://npm.pkg.github.com/company-name >> .npmrc
-    #   env:
-    #     GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-    - name: Semantic Release
-      id: semantic_release
-      run: npx semantic-release
+    - uses: actions/setup-java@v3
+      with:
+        distribution: zulu
+        java-version: 11
+        architecture: aarch64
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+    - uses: burrunan/gradle-cache-action@v1.12
+      name: Build (cached)
+      with:
+        arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+        gradle-version: wrapper
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        registry-url: https://npm.pkg.github.com/
+        scope: '@superbet-group'
+    - name: Build Javascript Package
+      run: ./build-javascript.sh
+    - name: Setup npm registry
+      run: |
+        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
+        echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
       env:
         GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+    - name: Semantic Release
+      id: semantic_release
+      uses: cycjimmy/semantic-release-action@v3.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - name: Prepare Swift package
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      run: |
+        cp -R shared/build/XCFrameworks/release/* packages/swift-package
+        sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
+    - name: Zip iOS framework
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      uses: papeloto/action-zip@v1
+      with:
+        files: shared/build/XCFrameworks/release/*
+        dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}-${{ steps.semantic_release.outputs.new_release_version }}.zip
+    - name: Prepare Swift package repo
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      uses: GuillaumeFalourd/clone-github-repo-action@v2
+      with:
+        owner: ${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
+        repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
+        access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
+    - name: Push new Swift package
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      run: |
+        cd ${{ inputs.SWIFT_PACKAGE_REPO }}
+        BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
+        git checkout -b $BRANCH
+        rm -rf ./*
+        cp -r ../packages/swift-package/* .
+        git config user.email "multiplatform.github.action@superbet.com"
+        git config user.name "Multiplatform Github Action"
+        git add .
+        git commit -m "New version ${{ steps.semantic_release.outputs.new_release_version }} ✨"
+        git push --set-upstream origin $BRANCH
+        git tag ${{ steps.semantic_release.outputs.new_release_version }}
+        git push --tags
+    - name: Publish Android library
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      uses: burrunan/gradle-cache-action@v1.12
+      env:
+        GH_PUBLISH_USERNAME: ${{ secrets.GH_PUBLISH_USERNAME }}
+        GH_PUBLISH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+        VERSION: ${{ steps.semantic_release.outputs.new_release_version }}
+      with:
+        arguments: ${{ inputs.ANDROID_PUBLISH_TASK }}
+        gradle-version: wrapper
+        execution-only-caches: true
