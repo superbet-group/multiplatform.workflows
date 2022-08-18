@@ -16,18 +16,18 @@ jobs:
       new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
     steps:
     - uses: actions/checkout@v1
-    - name: Setup Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16.17.0'
-        registry-url: https://npm.pkg.github.com/
-        scope: '@company-name'
-    - name: Setup npm registry
-      run: |
-        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-        echo @company-name:registry=https://npm.pkg.github.com/company-name >> .npmrc
-      env:
-        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+    # - name: Setup Node
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: '16.17.0'
+    #     registry-url: https://npm.pkg.github.com/
+    #     scope: '@company-name'
+    # - name: Setup npm registry
+    #   run: |
+    #     echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
+    #     echo @company-name:registry=https://npm.pkg.github.com/company-name >> .npmrc
+    #   env:
+    #     GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Semantic Release
       id: semantic_release
       uses: cycjimmy/semantic-release-action@v3.0.0
