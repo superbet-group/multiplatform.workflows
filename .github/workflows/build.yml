@@ -71,8 +71,8 @@ jobs:
         node-version: '16.17.0'
         registry-url: https://npm.pkg.github.com/
         scope: '@superbet-group'
-    - name: Build Javascript Package
-      run: ./build-javascript.sh
+    # - name: Build Javascript Package
+    #   run: ./build-javascript.sh
     - name: Setup npm registry
       run: |
         echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
