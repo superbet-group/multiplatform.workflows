@@ -60,31 +60,38 @@ jobs:
         architecture: aarch64
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
-    - uses: burrunan/gradle-cache-action@v1.12
-      name: Build (cached)
-      with:
-        arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
-        gradle-version: wrapper
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
         node-version: 16
         registry-url: https://npm.pkg.github.com/
         scope: '@superbet-group'
-    - name: Build Javascript Package
-      run: ./build-javascript.sh
-    - name: Setup npm registry
-      run: |
-        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-        echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
-      env:
-        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Semantic Release
       id: semantic_release
       uses: cycjimmy/semantic-release-action@v3.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    - uses: burrunan/gradle-cache-action@v1.12
+      name: Build (cached)
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      with:
+        arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+        gradle-version: wrapper
+    - name: Build Javascript Package
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      run: ./build-javascript.sh
+    - name: Publish Javascript Package
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      run: |
+        cd packages/js-package
+        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
+        echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
+        npm version ${{ steps.semantic_release.outputs.new_release_version }}
+        npm publish
+        cd -
+      env:
+        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Prepare Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
