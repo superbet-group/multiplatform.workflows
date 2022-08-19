@@ -88,6 +88,13 @@ jobs:
         echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
       env:
         GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+    - name: Publish Javascript Package
+      if: steps.semantic_release.outputs.new_release_published == 'true'
+      run: |
+        cd packages/js-package
+        npm version ${{ steps.semantic_release.outputs.new_release_version }}
+        npm publish
+        cd -
     - name: Prepare Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
