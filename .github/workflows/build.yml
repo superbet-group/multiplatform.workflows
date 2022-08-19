@@ -81,20 +81,17 @@ jobs:
     - name: Build Javascript Package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: ./build-javascript.sh
-    - name: Setup npm registry
-      if: steps.semantic_release.outputs.new_release_published == 'true'
-      run: |
-        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-        echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
-      env:
-        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Publish Javascript Package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
         cd packages/js-package
+        echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
+        echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
         npm version ${{ steps.semantic_release.outputs.new_release_version }}
         npm publish
         cd -
+      env:
+        GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
     - name: Prepare Swift package
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
