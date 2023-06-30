@@ -1,8 +1,8 @@
 # multiplatform.workflows
-Repository hosting the Github Actions workflows used for building Multiplatform libraries
+Repository hosting the Github Actions workflows used for building Multiplatform libraries.
 
 ## Notes
-### Secrets that need to be defiend
+### Secrets that need to be defined
 
 - `GH_PUBLISH_TOKEN`
 - `GH_PUBLISH_USERNAME`
