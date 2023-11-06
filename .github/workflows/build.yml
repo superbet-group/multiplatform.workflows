@@ -31,7 +31,7 @@ on:
 
 jobs:
   check_prerequisites:
-    runs-on: "aws"
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - name: Check if required repo structure is present
@@ -41,7 +41,7 @@ jobs:
           allow_failure: true
   build:
     needs: check_prerequisites
-    runs-on: "aws"
+    runs-on: superology-office
     env:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
@@ -55,10 +55,11 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'
+        distribution: zulu
         java-version: 17
+        architecture: aarch64
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v2
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
