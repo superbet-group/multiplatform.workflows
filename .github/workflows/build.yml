@@ -97,17 +97,6 @@ jobs:
       run: |
         cp -R shared/build/XCFrameworks/release/* packages/swift-package
         sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
-    - name: Upload XCFramework
-      uses: actions/upload-artifact@v2
-      with:
-        name: BuildProducts
-        # The xcframework is at the path `.build/archives/MultiplatformLib.xcframework.zip`.
-        # GitHub always zips the artifacts before uploading, so if we uploaded the .xframework.zip
-        # directly then it would actually upload a double-zip (a .zip containing our `MultiplatformLib.xcframework.zip`).
-        # This is confusing especially since macOS Archive Utility automatially unzips both layers at once.
-        # Instead, we upload the entire archives folder, resulting in an `XCFramework.zip` that unzips
-        # to an `archives` directory containing our `MultiplatformLib.xcframework.zip`.
-        path: shared/build/XCFrameworks/release/*
     - name: Zip iOS framework
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: vimtor/action-zip@v1
