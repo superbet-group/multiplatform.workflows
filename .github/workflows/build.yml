@@ -99,11 +99,9 @@ jobs:
 #        sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
     - name: Zip iOS framework
       if: steps.semantic_release.outputs.new_release_published == 'true'
-      uses: vimtor/action-zip@v1
-      with:
-#        files: shared/build/XCFrameworks/release/*
-        files: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework
-        dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
+      run: |
+        cd ../packages/swift-package
+        zip -r "${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip" "${{ inputs.IOS_LIBRARY_NAME }}.xcframework"
     - name: Prepare Swift package repo
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: GuillaumeFalourd/clone-github-repo-action@v2
@@ -118,7 +116,7 @@ jobs:
         BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
         git checkout -b $BRANCH
         rm -rf ./*
-        cp -r ../packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework .
+        cp -r ../packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip .
         git config user.email "multiplatform.github.action@superbet.com"
         git config user.name "Multiplatform Github Action"
         git add .
