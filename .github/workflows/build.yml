@@ -100,7 +100,7 @@ jobs:
     - name: Zip iOS framework
       if: steps.semantic_release.outputs.new_release_published == 'true'
       run: |
-        cd ../packages/swift-package
+        cd packages/swift-package
         zip -r "${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip" "${{ inputs.IOS_LIBRARY_NAME }}.xcframework"
     - name: Prepare Swift package repo
       if: steps.semantic_release.outputs.new_release_published == 'true'
@@ -116,7 +116,7 @@ jobs:
         BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
         git checkout -b $BRANCH
         rm -rf ./*
-        cp -r ../packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip .
+        cp -r packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip .
         git config user.email "multiplatform.github.action@superbet.com"
         git config user.name "Multiplatform Github Action"
         git add .
