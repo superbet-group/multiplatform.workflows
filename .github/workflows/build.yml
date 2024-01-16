@@ -116,7 +116,7 @@ jobs:
         cd ${{ inputs.SWIFT_PACKAGE_REPO }}
         BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
         git checkout -b $BRANCH
-        rm -rf ./*
+#        rm -rf ./*
         cp -r packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip .
         git config user.email "multiplatform.github.action@superbet.com"
         git config user.name "Multiplatform Github Action"
