@@ -102,6 +102,7 @@ jobs:
       run: |
         cd packages/swift-package
         zip -r "${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip" "${{ inputs.IOS_LIBRARY_NAME }}.xcframework"
+        cd -
     - name: Prepare Swift package repo
       if: steps.semantic_release.outputs.new_release_published == 'true'
       uses: GuillaumeFalourd/clone-github-repo-action@v2
