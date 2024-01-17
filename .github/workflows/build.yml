@@ -103,6 +103,12 @@ jobs:
         with:
           files: shared/build/XCFrameworks/release/*
           dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
+      - name: Zip iOS XCFramework
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        uses: vimtor/action-zip@v1
+        with:
+          files: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework
+          dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
       - name: Prepare Swift package repo
         if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: GuillaumeFalourd/clone-github-repo-action@v2
