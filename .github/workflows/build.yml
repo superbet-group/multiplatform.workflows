@@ -141,7 +141,7 @@ jobs:
         id: upload_release_asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ inputs.SWIFT_PACKAGE_REPO }}/releases/tag/${{ steps.semantic_release.outputs.new_release_version }}
           asset_path: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
           asset_name: ${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
           asset_content_type: application/zip
