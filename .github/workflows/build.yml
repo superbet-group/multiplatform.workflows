@@ -92,16 +92,19 @@ jobs:
           cd -
         env:
           GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+      - name: Prepare Swift package
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        run: |
+          cp -R shared/build/XCFrameworks/release/* packages/swift-package
+          sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
       - name: Zip iOS framework
         if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: vimtor/action-zip@v1
         with:
-          files: shared/build/XCFrameworks/release/*
-          dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.zip
-      - name: Prepare Swift package
-        if: steps.semantic_release.outputs.new_release_published == 'true'
+          files: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework
+          dest: packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework.zip
         run: |
-          sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
+          rm -r packages/swift-package/${{ inputs.IOS_LIBRARY_NAME }}.xcframework
       - name: Prepare Swift package repo
         if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: GuillaumeFalourd/clone-github-repo-action@v2
