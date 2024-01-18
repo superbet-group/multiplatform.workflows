@@ -97,7 +97,7 @@ jobs:
         run: |
           cp -R shared/build/XCFrameworks/release/* packages/swift-package
           sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
-      - name: Prepare Swift package repo
+      - name: Clone Swift package repo
         if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
