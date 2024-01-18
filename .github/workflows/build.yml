@@ -28,6 +28,8 @@ on:
         required: true
       GH_PUBLISH_TOKEN:
         required: true
+      GH_PUBLISH_TOKEN_IOS:
+        required: true
 
 jobs:
   check_prerequisites:
