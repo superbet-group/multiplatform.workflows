@@ -72,12 +72,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - uses: burrunan/gradle-cache-action@v1.12
-        name: Build (cached)
+      - name: Build XCFramework
         if: steps.semantic_release.outputs.new_release_published == 'true'
-        with:
-          arguments: assemble ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
-          gradle-version: wrapper
+        run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
       - name: Build Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./build-javascript.sh
