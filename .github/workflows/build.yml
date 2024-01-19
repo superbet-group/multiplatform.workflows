@@ -76,13 +76,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Set up environment
-        run: |
-          echo '/usr/local/bin' >> $GITHUB_PATH
-
-      - name: Print aws executable path
-        run: which aws
-
       - name: Build Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./build-javascript.sh
@@ -103,24 +96,35 @@ jobs:
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
 
-      - name: Create XCFramework zip
+      - name: Prepare Swift package
+        if: steps.semantic_release.outputs.new_release_published == 'true'
         run: |
-          mkdir -p ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework
-          zip -r ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip shared/build/XCFrameworks/release/*
+          cp -R shared/build/XCFrameworks/release/* packages/swift-package
+          sed -i '' "s/<libName>/${{ inputs.IOS_LIBRARY_NAME }}/g" packages/swift-package/Package.swift
 
-      - name: Calculate XCFramework zip checksum
-        id: calculate_checksum
-        run: |
-          cd $GITHUB_WORKSPACE
-          zip_path="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
-          checksum=$(swift package compute-checksum "$zip_path")
-          echo "File checksum: $checksum"
+      - name: Prepare Swift package repo
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        uses: GuillaumeFalourd/clone-github-repo-action@v2
+        with:
+          owner: ${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
+          repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
+          access-token: ${{ secrets.GH_PUBLISH_TOKEN }}
 
-      - name: Publish XCFramework zip to S3
+      - name: Push new Swift package
+        if: steps.semantic_release.outputs.new_release_published == 'true'
         run: |
-          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
-          framework_folder="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
-          aws s3 sync "$framework_folder" "$s3_bucket" --profile applications-assets
+          cd ${{ inputs.SWIFT_PACKAGE_REPO }}
+          BRANCH="release/${{ steps.semantic_release.outputs.new_release_version }}"
+          git checkout -b $BRANCH
+          rm -rf ./*
+          cp -r ../packages/swift-package/* .
+          git config user.email "multiplatform.github.action@superbet.com"
+          git config user.name "Multiplatform Github Action"
+          git add .
+          git commit -m "New version ${{ steps.semantic_release.outputs.new_release_version }} ✨"
+          git push --set-upstream origin $BRANCH
+          git tag ${{ steps.semantic_release.outputs.new_release_version }}
+          git push --tags
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
