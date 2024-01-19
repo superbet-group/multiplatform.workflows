@@ -58,26 +58,28 @@ jobs:
           distribution: zulu
           java-version: 17
           architecture: aarch64
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
           scope: '@superbet-group'
+
       - name: Semantic Release
         id: semantic_release
         uses: cycjimmy/semantic-release-action@v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Build XCFramework
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+
       - name: Build Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./build-javascript.sh
+
       - name: Publish Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: |
@@ -90,12 +92,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
 
+      - name: Build XCFramework
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+
       - name: Create XCFramework zip
         run: |
           mkdir -p ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework
           zip -r ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip shared/build/XCFrameworks/release/*
 
-      - name: Calculate xcframework.zip checksum
+      - name: Calculate XCFramework zip checksum
         id: calculate_checksum
         run: |
           cd $GITHUB_WORKSPACE
@@ -103,7 +109,13 @@ jobs:
           checksum=$(swift package compute-checksum "$zip_path")
           echo "File checksum: $checksum"
 
-      - name: Copy files to the S3 bucket
+      - name: Print aws executable path
+        run: which aws
+
+      - name: Print environment variables
+        run: env
+
+      - name: Publish XCFramework zip to S3
         run: |
           s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
           framework_folder="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
