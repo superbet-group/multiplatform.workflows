@@ -76,6 +76,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Set up environment
+        run: |
+          echo '/usr/local/bin' >> $GITHUB_PATH
+
+      - name: Print aws executable path
+        run: which aws
+
       - name: Build Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./build-javascript.sh
@@ -108,9 +115,6 @@ jobs:
           zip_path="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
           checksum=$(swift package compute-checksum "$zip_path")
           echo "File checksum: $checksum"
-
-      - name: Add AWS CLI to PATH
-        run: echo "::add-path::/usr/local/bin"
 
       - name: Publish XCFramework zip to S3
         run: |
