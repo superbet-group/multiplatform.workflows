@@ -69,9 +69,6 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@superbet-group'
 
-      - name: Print Environment Variables
-        run: env
-
       - name: Semantic Release
         id: semantic_release
         uses: cycjimmy/semantic-release-action@v3.0.0
@@ -114,6 +111,7 @@ jobs:
 
       - name: Publish XCFramework zip to S3
         run: |
+          echo "::add-path::/usr/local/bin"
           s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
           framework_folder="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
           aws s3 sync "$framework_folder" "$s3_bucket" --profile applications-assets
