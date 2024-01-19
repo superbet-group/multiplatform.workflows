@@ -109,9 +109,11 @@ jobs:
           checksum=$(swift package compute-checksum "$zip_path")
           echo "File checksum: $checksum"
 
+      - name: Add AWS CLI to PATH
+        run: echo "::add-path::/usr/local/bin"
+
       - name: Publish XCFramework zip to S3
         run: |
-          echo "::add-path::/usr/local/bin"
           s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
           framework_folder="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
           aws s3 sync "$framework_folder" "$s3_bucket" --profile applications-assets
