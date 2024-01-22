@@ -98,16 +98,22 @@ jobs:
 
       - name: Create XCFramework zip
         run: |
+          mkdir -p ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework
+          zip -r ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip shared/build/XCFrameworks/release/*
+
+      - name: Calculate XCFramework zip checksum
+        id: calculate_checksum
+        run: |
           cd $GITHUB_WORKSPACE
-          xcframework_dir="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework"
-          
-          sudo mkdir -p "${xcframework_dir}"
-          
-          zip -r "${xcframework_dir}.zip" shared/build/XCFrameworks/release/*
-          
-          zip_path="${xcframework_dir}.zip"
+          zip_path="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
           checksum=$(swift package compute-checksum "$zip_path")
           echo "File checksum: $checksum"
+
+      - name: Print aws executable path
+        run: which aws
+
+      - name: Print environment variables
+        run: env
 
       - name: Publish XCFramework zip to S3
         run: |
