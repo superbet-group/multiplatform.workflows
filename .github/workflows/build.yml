@@ -106,12 +106,12 @@ jobs:
           checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
           echo "File checksum: $checksum"
 
-      - name: Publish XCFramework zip to S3
+      - name: Publish XCFramework zip
         run: |
           s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
-          framework_folder="packages/swift-package/${{ steps.semantic_release.outputs.new_release_version }}"
-          framework_file="$framework_folder/MultiplatformLib.xcframework.zip"
-          aws s3 sync "$framework_folder" "$s3_bucket" --exclude "*" --include "$(basename "$framework_file")" --profile applications-assets
+          version="${{ steps.semantic_release.outputs.new_release_version }}"
+          framework_directory="packages/swift-package/$version"
+          aws s3 sync "$framework_directory" "$s3_bucket/$version" --profile applications-assets
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
