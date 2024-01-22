@@ -101,7 +101,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           xcframework_dir="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework"
           
-          mkdir -p "${xcframework_dir}"
+          sudo mkdir -p "${xcframework_dir}"
           
           zip -r "${xcframework_dir}.zip" shared/build/XCFrameworks/release/*
           
