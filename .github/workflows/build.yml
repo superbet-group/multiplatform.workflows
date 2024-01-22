@@ -102,24 +102,13 @@ jobs:
         if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
 
-      - name: Create XCFramework zip
+      - name: Create XCFramework zip and Upload to S3
         run: |
-          mkdir -p ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework
-          zip -r ${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip shared/build/XCFrameworks/release/*
+          xcframework_dir="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework"
 
-      - name: Calculate XCFramework zip checksum
-        id: calculate_checksum
-        run: |
-          cd $GITHUB_WORKSPACE
-          zip_path="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
-          checksum=$(swift package compute-checksum "$zip_path")
+          checksum=$(zip -r - shared/build/XCFrameworks/release/* | tee >(aws s3 cp - "s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/${xcframework_dir}.zip" --profile applications-assets) | swift package compute-checksum -)
+
           echo "File checksum: $checksum"
-
-      - name: Publish XCFramework zip to S3
-        run: |
-          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
-          framework_folder="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
-          aws s3 sync "$framework_folder" "$s3_bucket" --profile applications-assets
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
