@@ -69,6 +69,9 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@superbet-group'
 
+      - name: Print aws executable path
+        run: which aws
+
       - name: Semantic Release
         id: semantic_release
         uses: cycjimmy/semantic-release-action@v3.0.0
