@@ -69,6 +69,12 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@superbet-group'
 
+      - name: Print aws executable path
+        run: which aws
+
+      - name: Print environment variables
+        run: env
+
       - name: Semantic Release
         id: semantic_release
         uses: cycjimmy/semantic-release-action@v3.0.0
@@ -108,12 +114,6 @@ jobs:
           zip_path="${{ steps.semantic_release.outputs.new_release_version }}/MultiplatformLib.xcframework.zip"
           checksum=$(swift package compute-checksum "$zip_path")
           echo "File checksum: $checksum"
-
-      - name: Print aws executable path
-        run: which aws
-
-      - name: Print environment variables
-        run: env
 
       - name: Publish XCFramework zip to S3
         run: |
