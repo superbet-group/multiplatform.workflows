@@ -70,7 +70,7 @@ jobs:
           scope: '@superbet-group'
 
       - name: Print aws executable path
-        run: which aws
+        run: which /usr/local/bin/aws
 
       - name: Semantic Release
         id: semantic_release
