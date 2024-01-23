@@ -105,10 +105,10 @@ jobs:
           mkdir -p $xcframework_dir
           zip -r "$xcframework_dir/MultiplatformLib.xcframework.zip" shared/build/XCFrameworks/release/*
 
-          checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
-          echo -e "\e[1;33mFile checksum: $checksum\e[0m"
-
           aws s3 sync "$xcframework_dir" "$s3_bucket/$version/" --profile applications-assets
+          
+          checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
+          echo "File checksum: $checksum"
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
