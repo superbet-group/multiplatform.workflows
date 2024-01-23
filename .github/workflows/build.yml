@@ -100,7 +100,7 @@ jobs:
         run: |
           version="${{ steps.semantic_release.outputs.new_release_version }}"
           xcframework_dir="packages/swift-package/$version"
-          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform/"
+          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform"
 
           mkdir -p $xcframework_dir
           zip -r "$xcframework_dir/MultiplatformLib.xcframework.zip" shared/build/XCFrameworks/release/*
@@ -108,7 +108,7 @@ jobs:
           checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
           echo "File checksum: $checksum"
 
-          aws s3 sync "$xcframework_dir" "$s3_bucket/$version" --exclude "*" --include "MultiplatformLib.xcframework.zip" --profile applications-assets
+          aws s3 sync "$xcframework_dir" "$s3_bucket/$version/" --profile applications-assets
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
