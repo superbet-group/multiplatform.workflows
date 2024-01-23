@@ -106,24 +106,9 @@ jobs:
           zip -r "$xcframework_dir/MultiplatformLib.xcframework.zip" shared/build/XCFrameworks/release/*
 
           checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
-          echo "File checksum: $checksum"
+          echo -e "\e[1;33mFile checksum: $checksum\e[0m"
 
           aws s3 sync "$xcframework_dir" "$s3_bucket/$version/" --profile applications-assets
-
-      - name: Create iOS release
-        id: create_release
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          repository: ${{ inputs.SWIFT_PACKAGE_REPO }}
-          tag_name: ${{ steps.semantic_release.outputs.new_release_version }}
-          release_name: ${{ steps.semantic_release.outputs.new_release_version }}
-          draft: false
-          prerelease: ${{ contains(steps.semantic_release.outputs.new_release_version, 'dev') }}
-          body: |
-            Release notes: https://github.com/superbet-group/multiplatform.lib/releases/tag/v${{ steps.semantic_release.outputs.new_release_version }}
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
