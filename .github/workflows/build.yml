@@ -125,9 +125,6 @@ jobs:
           release_version=${{ steps.semantic_release.outputs.new_release_version }}
           checksum=${{ steps.publish_xcframework.outputs.checksum }}
 
-          git config user.email "multiplatform.github.action@superbet.com"
-          git config user.name "Multiplatform Github Action"
-
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GH_PUBLISH_TOKEN }}" \
             -H "Accept: application/vnd.github.everest-preview+json" \
