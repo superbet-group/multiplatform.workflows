@@ -91,7 +91,7 @@ jobs:
             -H "Accept: application/vnd.github.everest-preview+json" \
             -H "Content-Type: application/json" \
             https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
-            --data '{"event_type": $event_type}'
+            --data "{\"event_type\": \"$event_type\"}"
 
       - name: Build Javascript Package
         if: steps.semantic_release.outputs.new_release_published == 'true'
