@@ -98,6 +98,7 @@ jobs:
 
       - name: Publish XCFramework
         if: steps.semantic_release.outputs.new_release_published == 'true'
+        id: publish_xcframework
         run: |
           version="${{ steps.semantic_release.outputs.new_release_version }}"
           xcframework_dir="packages/swift-package/$version"
