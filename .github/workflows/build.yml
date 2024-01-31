@@ -111,6 +111,20 @@ jobs:
           checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
           echo "File checksum: $checksum"
 
+      - name: Trigger create release workflow
+        if: steps.semantic_release.outputs.new_release_published == 'true'
+        run: |
+          repo_owner=${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
+          repo_name=${{ inputs.SWIFT_PACKAGE_REPO }}
+          event_type="trigger-release-workflow"
+          
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
+            --data '{"event_type": $event_type}'
+
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: burrunan/gradle-cache-action@v1.12
