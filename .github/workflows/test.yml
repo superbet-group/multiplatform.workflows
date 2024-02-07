@@ -19,9 +19,11 @@ jobs:
         with:
           files: "packages/swift-package,packages/swift-package/Package.swift,packages/js-package,packages/js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh,.releaserc"
           allow_failure: true
-  build:
+  test:
     needs: check_prerequisites
     runs-on: superology-office
+    env:
+      IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
