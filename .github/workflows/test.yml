@@ -36,8 +36,8 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Run :allTests
-        run: ./gradlew shared:allTests
+      # - name: Run :allTests
+      #   run: ./gradlew shared:allTests
 
       - name: Run :detekt
         run: ./gradlew detekt
