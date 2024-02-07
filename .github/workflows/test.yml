@@ -13,7 +13,6 @@ jobs:
   check_prerequisites:
     runs-on: ubuntu-latest
     steps:
-      - uses: browser-actions/setup-chrome@v1
       - uses: actions/checkout@v1
       - name: Check if required repo structure is present
         uses: andstor/file-existence-action@v1.1.0
@@ -27,6 +26,7 @@ jobs:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
     steps:
+      - uses: browser-actions/setup-chrome@v1
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
         with:
