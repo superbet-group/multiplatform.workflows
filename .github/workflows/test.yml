@@ -24,6 +24,7 @@ jobs:
     runs-on: superology-office
     env:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
+      REPO_NAME: ${{ inputs.REPO_NAME }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
