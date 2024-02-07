@@ -27,8 +27,7 @@ jobs:
       REPO_NAME: ${{ inputs.REPO_NAME }}
     steps:
       # Until https://github.com/browser-actions/setup-chrome/pull/483 is merged
-      - name: Setup Chrome - Mac_Arm
-        uses: antoooooooooooonie/setup-chrome@v1.0.0
+      - uses: antoooooooooooonie/setup-chrome@v1.0.0
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
         with:
