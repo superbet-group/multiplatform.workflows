@@ -27,8 +27,8 @@ jobs:
         uses: android-actions/setup-android@v2
 
       - name: Run :allTests
-        uses: ./gradlew :allTests
+        uses: ./gradlew allTests
 
       - name: Run :detekt
-        uses: ./gradlew :detekt
+        uses: ./gradlew detekt
   
