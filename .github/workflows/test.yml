@@ -2,6 +2,13 @@ name: Multiplatform Test
 
 on:
   workflow_call:
+    inputs:
+      REPO_NAME:
+        required: true
+        type: string
+      IOS_LIBRARY_NAME:
+        required: true
+        type: string
 jobs:
   check_prerequisites:
     runs-on: ubuntu-latest
