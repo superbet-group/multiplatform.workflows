@@ -26,7 +26,9 @@ jobs:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
     steps:
-      - uses: browser-actions/setup-chrome@v1
+      # Until https://github.com/browser-actions/setup-chrome/pull/483 is merged
+      # TODO Self-host this action for stability and security
+      - uses: AriPerkkio/setup-chrome@master
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
         with:
