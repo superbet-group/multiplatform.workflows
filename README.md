@@ -19,6 +19,8 @@ Repository hosting the Github Actions workflows used for building Multiplatform 
 
 ### Example usage
 
+#### Build and publish
+
 ```yaml
 name: Build and publish
 
@@ -38,3 +40,7 @@ jobs:
         ANDROID_PUBLISH_TASK: publishAndroidReleasePublicationToMavenRepository
     secrets: inherit
 ```
+
+#### Test
+
+**TODO**

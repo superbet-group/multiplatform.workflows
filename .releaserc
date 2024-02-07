@@ -1,10 +1,13 @@
 {
-     "branches": [
-        "master",
-        { "name": "dev-*", "prerelease": true },
-     ],
-    "plugins": [
-        "@semantic-release/commit-analyzer"
-    ],
-    "repositoryUrl": "git@github.com:superbet-group/multiplatform.workflows.git"
+  "branches": [
+    "master",
+    {
+      "name": "dev-*",
+      "prerelease": true
+    }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer"
+  ],
+  "repositoryUrl": "git@github.com:superbet-group/multiplatform.workflows.git"
 }
