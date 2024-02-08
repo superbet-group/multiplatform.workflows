@@ -1,0 +1,81 @@
+name: Multiplatform Repository Check and Test
+
+on:
+  workflow_call:
+    inputs:
+      REPO_NAME:
+        required: true
+        type: string
+      IOS_LIBRARY_NAME:
+        required: true
+        type: string
+      SLACK_NOTIFY:
+        required: false
+        type: boolean
+        default: false
+      SLACK_TOPIC:
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: false
+jobs:
+  check_prerequisites:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check if required repo structure is present
+        uses: andstor/file-existence-action@v1.1.0
+        with:
+          files: "packages/swift-package,packages/swift-package/Package.swift,packages/js-package,packages/js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh,.releaserc"
+          allow_failure: true
+  test:
+    needs: check_prerequisites
+    runs-on: superology-office
+    env:
+      IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
+      REPO_NAME: ${{ inputs.REPO_NAME }}
+      SLACK_NOTIFY: ${{ inputs.SLACK_NOTIFY }}
+      SLACK_TOPIC: ${{ inputs.SLACK_TOPIC }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 17
+          architecture: aarch64
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Run allTests
+        run: ./gradlew shared:allTests
+
+      # In theory we could run this in a parallel job but it's not worth the effort
+      # because it only takes two seconds to execute
+      - name: Run detekt
+        run: ./gradlew detekt
+  notify_slack:
+    needs: [test, check_prerequisites]
+    runs-on: ubuntu-latest
+    if: ${{ failure() && inputs.SLACK_NOTIFY }}
+    steps:
+      - name: Send Slack notification on failure
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚨 ${{ inputs.SLACK_TOPIC }} failed: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚨 ${{ inputs.SLACK_TOPIC }} failed: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
