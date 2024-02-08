@@ -51,12 +51,16 @@ jobs:
       - name: Run :allTests
         run: ./gradlew shared:allTests
 
+      # In theory we could run this in a parallel job but it's not worth the effort
+      # because it only takes two seconds to execute
       - name: Run :detekt
         run: ./gradlew detekt
-
+  notify_slack:
+    needs: [test, check_prerequisites]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
       - name: Send Slack notification on failure
-        if: ${{ failure() && inputs.NOTIFY_SLACK }}
-        id: slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: ${{ inputs.SLACK_CHANNEL }}
