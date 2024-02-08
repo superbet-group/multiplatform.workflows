@@ -9,15 +9,15 @@ on:
       IOS_LIBRARY_NAME:
         required: true
         type: string
-      NOTIFY_SLACK:
+      SLACK_NOTIFY:
         required: false
         type: boolean
         default: false
-      SLACK_CHANNEL:
+      SLACK_TOPIC:
         required: false
         type: string
     secrets:
-      SLACK_BOT_TOKEN:
+      SLACK_WEBHOOK_URL:
         required: false
 jobs:
   check_prerequisites:
@@ -35,8 +35,8 @@ jobs:
     env:
       IOS_LIBRARY_NAME: ${{ inputs.IOS_LIBRARY_NAME }}
       REPO_NAME: ${{ inputs.REPO_NAME }}
-      NOTIFY_SLACK: ${{ inputs.NOTIFY_SLACK }}
-      SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
+      SLACK_NOTIFY: ${{ inputs.SLACK_NOTIFY }}
+      SLACK_TOPIC: ${{ inputs.SLACK_TOPIC }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
@@ -58,12 +58,24 @@ jobs:
   notify_slack:
     needs: [test, check_prerequisites]
     runs-on: ubuntu-latest
-    if: ${{ failure() }}
+    if: ${{ failure() && inputs.SLACK_NOTIFY }}
     steps:
       - name: Send Slack notification on failure
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          channel-id: ${{ inputs.SLACK_CHANNEL }}
-          slack-message: "GitHub build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+          payload: |
+            {
+              "text": "${{ inputs.SLACK_TOPIC }} failed: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ inputs.SLACK_TOPIC }} failed: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                  }
+                }
+              ]
+            }
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
