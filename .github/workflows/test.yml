@@ -48,12 +48,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Run :allTests
+      - name: Run allTests
         run: ./gradlew shared:allTests
 
       # In theory we could run this in a parallel job but it's not worth the effort
       # because it only takes two seconds to execute
-      - name: Run :detekt
+      - name: Run detekt
         run: ./gradlew detekt
   notify_slack:
     needs: [test, check_prerequisites]
