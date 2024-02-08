@@ -3,7 +3,7 @@ Repository hosting the Github Actions workflows used for building Multiplatform 
 
 ## Notes
 
-### Build and Publish workflow
+### Build and Publish workflow (build.yml)
 #### Secrets that need to be defined
 
 - `GH_PUBLISH_TOKEN`
@@ -41,7 +41,7 @@ jobs:
     **secrets**: inherit
 ```
 
-### Test workflow
+### Repository Check and Test workflow (check-and-test.yml)
 #### Secrets that need to be defined
 
 none
@@ -71,7 +71,7 @@ on:
 
 jobs:
   invoke:
-    uses: superbet-group/multiplatform.workflows/.github/workflows/test.yml
+    uses: superbet-group/multiplatform.workflows/.github/workflows/check-and-test.yml
     with:
       REPO_NAME: multiplatform.lib
       IOS_LIBRARY_NAME: MultiplatformLib

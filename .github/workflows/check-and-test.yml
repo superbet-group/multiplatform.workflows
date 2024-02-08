@@ -1,4 +1,4 @@
-name: Multiplatform Test
+name: Multiplatform Repository Check and Test
 
 on:
   workflow_call:
