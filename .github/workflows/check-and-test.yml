@@ -29,7 +29,7 @@ jobs:
         with:
           files: "packages/swift-package,packages/swift-package/Package.swift,packages/js-package,packages/js-package/package.json,shared,shared/build.gradle.kts,build-javascript.sh,.releaserc"
           allow_failure: true
-  test:
+  check_and_test:
     needs: check_prerequisites
     runs-on: superology-office
     env:
@@ -55,8 +55,8 @@ jobs:
       # because it only takes two seconds to execute
       - name: Run detekt
         run: ./gradlew detekt
-  notify_slack:
-    needs: [test, check_prerequisites]
+  notify_slack_on_failure:
+    needs: [check_and_test, check_prerequisites]
     runs-on: ubuntu-latest
     if: ${{ failure() && inputs.SLACK_NOTIFY }}
     steps:
