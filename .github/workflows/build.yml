@@ -66,4 +66,7 @@ jobs:
           channel-id: "C06MRHRTFK2"
           slack-message: "MultiplatformLib version <version> is released\nSee release: https://github.com/superbet-group/multiplatform.lib/releases/tag/v<version>"
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_UPDATES_WEBHOOK_URL }}
+
+
+
