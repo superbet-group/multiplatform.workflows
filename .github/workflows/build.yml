@@ -143,3 +143,14 @@ jobs:
           arguments: ${{ inputs.ANDROID_PUBLISH_TASK }}
           gradle-version: wrapper
           execution-only-caches: true
+
+      - name: Notify Slack channel about release
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "MultiplatformLib version ${{ steps.semantic_release.outputs.new_release_version }} is released!\nSee release notes: https://github.com/superbet-group/multiplatform.lib/releases/tag/v${{ steps.semantic_release.outputs.new_release_version }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_UPDATES_WEBHOOK_URL }}
