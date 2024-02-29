@@ -145,7 +145,7 @@ jobs:
           execution-only-caches: true
 
       - name: Notify Slack channel about release
-        if: steps.semantic_release.outputs.new_release_published == 'true' && steps.semantic_release.outputs.new_release_version =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+        if: steps.semantic_release.outputs.new_release_published == 'true' && startsWith(steps.semantic_release.outputs.new_release_version, 'dev-') == false
         id: slack-update
         uses: slackapi/slack-github-action@v1.25.0
         with:
