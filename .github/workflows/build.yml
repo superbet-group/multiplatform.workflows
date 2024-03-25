@@ -75,62 +75,62 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Build Javascript Package
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: ./build-javascript.sh
-
-      - name: Publish Javascript Package
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: |
-          cd packages/js-package
-          echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-          echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
-          npm version ${{ steps.semantic_release.outputs.new_release_version }}
-          npm publish
-          cd -
-        env:
-          GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-
-      - name: Build XCFramework
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
-
-      - name: Publish XCFramework
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        id: publish_xcframework
-        run: |
-          version="${{ steps.semantic_release.outputs.new_release_version }}"
-          xcframework_dir="packages/swift-package/$version"
-          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform"
-
-          mkdir -p $xcframework_dir
-          zip -r "$xcframework_dir/MultiplatformLib.xcframework.zip" shared/build/XCFrameworks/release/*
-
-          aws s3 sync "$xcframework_dir" "$s3_bucket/$version/" --profile applications-assets
-          
-          checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
-          echo "File checksum: $checksum"
-          
-          # Set the output variable for later use
-          echo "::set-output name=checksum::$checksum"
-
-      - name: Trigger create release workflow
-        if: steps.semantic_release.outputs.new_release_published == 'true'
-        run: |
-          repo_owner=${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
-          repo_name=${{ inputs.SWIFT_PACKAGE_REPO }}
-          event_type="trigger-release-workflow"
-          
-          release_version=${{ steps.semantic_release.outputs.new_release_version }}
-          checksum=${{ steps.publish_xcframework.outputs.checksum }}
-
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GH_PUBLISH_TOKEN }}" \
-            -H "Accept: application/vnd.github.everest-preview+json" \
-            -H "Content-Type: application/json" \
-            https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
-            --data "{\"event_type\": \"$event_type\", \"client_payload\": {\"release_version\": \"$release_version\", \"checksum\": \"$checksum\"}}"
+#
+#      - name: Build Javascript Package
+#        if: steps.semantic_release.outputs.new_release_published == 'true'
+#        run: ./build-javascript.sh
+#
+#      - name: Publish Javascript Package
+#        if: steps.semantic_release.outputs.new_release_published == 'true'
+#        run: |
+#          cd packages/js-package
+#          echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
+#          echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
+#          npm version ${{ steps.semantic_release.outputs.new_release_version }}
+#          npm publish
+#          cd -
+#        env:
+#          GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
+#
+#      - name: Build XCFramework
+#        if: steps.semantic_release.outputs.new_release_published == 'true'
+#        run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
+#
+#      - name: Publish XCFramework
+#        if: steps.semantic_release.outputs.new_release_published == 'true'
+#        id: publish_xcframework
+#        run: |
+#          version="${{ steps.semantic_release.outputs.new_release_version }}"
+#          xcframework_dir="packages/swift-package/$version"
+#          s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform"
+#
+#          mkdir -p $xcframework_dir
+#          zip -r "$xcframework_dir/MultiplatformLib.xcframework.zip" shared/build/XCFrameworks/release/*
+#
+#          aws s3 sync "$xcframework_dir" "$s3_bucket/$version/" --profile applications-assets
+#
+#          checksum=$(swift package compute-checksum "$xcframework_dir/MultiplatformLib.xcframework.zip")
+#          echo "File checksum: $checksum"
+#
+#          # Set the output variable for later use
+#          echo "::set-output name=checksum::$checksum"
+#
+#      - name: Trigger create release workflow
+#        if: steps.semantic_release.outputs.new_release_published == 'true'
+#        run: |
+#          repo_owner=${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
+#          repo_name=${{ inputs.SWIFT_PACKAGE_REPO }}
+#          event_type="trigger-release-workflow"
+#
+#          release_version=${{ steps.semantic_release.outputs.new_release_version }}
+#          checksum=${{ steps.publish_xcframework.outputs.checksum }}
+#
+#          curl -X POST \
+#            -H "Authorization: Bearer ${{ secrets.GH_PUBLISH_TOKEN }}" \
+#            -H "Accept: application/vnd.github.everest-preview+json" \
+#            -H "Content-Type: application/json" \
+#            https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
+#            --data "{\"event_type\": \"$event_type\", \"client_payload\": {\"release_version\": \"$release_version\", \"checksum\": \"$checksum\"}}"
 
       - name: Publish Android library
         if: steps.semantic_release.outputs.new_release_published == 'true'
@@ -144,14 +144,14 @@ jobs:
           gradle-version: wrapper
           execution-only-caches: true
 
-      - name: Notify Slack channel about release
-        if: steps.semantic_release.outputs.new_release_published == 'true' && startsWith(steps.semantic_release.outputs.new_release_version, 'dev-') == false
-        id: slack-update
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          payload: |
-            {
-              "text": "MultiplatformLib version ${{ steps.semantic_release.outputs.new_release_version }} is released!\nSee release notes: https://github.com/superbet-group/multiplatform.lib/releases/tag/v${{ steps.semantic_release.outputs.new_release_version }}"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_UPDATES_WEBHOOK_URL }}
+#      - name: Notify Slack channel about release
+#        if: steps.semantic_release.outputs.new_release_published == 'true' && startsWith(steps.semantic_release.outputs.new_release_version, 'dev-') == false
+#        id: slack-update
+#        uses: slackapi/slack-github-action@v1.25.0
+#        with:
+#          payload: |
+#            {
+#              "text": "MultiplatformLib version ${{ steps.semantic_release.outputs.new_release_version }} is released!\nSee release notes: https://github.com/superbet-group/multiplatform.lib/releases/tag/v${{ steps.semantic_release.outputs.new_release_version }}"
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_UPDATES_WEBHOOK_URL }}
