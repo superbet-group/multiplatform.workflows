@@ -48,9 +48,7 @@ jobs:
       SWIFT_PACKAGE_REPO: ${{ inputs.SWIFT_PACKAGE_REPO }}
       XCFRAMEWORK_BUILD_TASK: ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
       ANDROID_PUBLISH_TASK: ${{ inputs.ANDROID_PUBLISH_TASK }}
-    outputs:
-      new_release_published: ${{ steps.semantic_release.outputs.new_release_published }}
-      new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
+
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v3
@@ -73,38 +71,13 @@ jobs:
         id: get_tag
         run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
 
-#      - name: Semantic Release
-#        id: semantic_release
-#        uses: cycjimmy/semantic-release-action@v3.0.0
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-#          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-#      - name: Build Javascript Package
-#        if: steps.semantic_release.outputs.new_release_published == 'true'
-#        run: ./build-javascript.sh
-#
-#      - name: Publish Javascript Package
-#        if: steps.semantic_release.outputs.new_release_published == 'true'
-#        run: |
-#          cd packages/js-package
-#          echo //npm.pkg.github.com/:_authToken=$GH_TOKEN >> .npmrc
-#          echo @superbet-group:registry=https://npm.pkg.github.com/superbet-group >> .npmrc
-#          npm version ${{ steps.semantic_release.outputs.new_release_version }}
-#          npm publish
-#          cd -
-#        env:
-#          GH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-
       - name: Build XCFramework
-        if: steps.semantic_release.outputs.new_release_published == 'true'
         run: ./gradlew ${{ inputs.XCFRAMEWORK_BUILD_TASK }}
 
       - name: Publish XCFramework
-        if: steps.semantic_release.outputs.new_release_published == 'true'
         id: publish_xcframework
         run: |
-          version="${{ steps.semantic_release.outputs.new_release_version }}"
+          version="${{ steps.get_tag.outputs.TAG }}"
           xcframework_dir="packages/swift-package/$version"
           s3_bucket="s3://applications-assets-public.production.stats.superbet.k8s.local/app-assets/multiplatform"
 
@@ -119,43 +92,13 @@ jobs:
           # Set the output variable for later use
           echo "::set-output name=checksum::$checksum"
 
-#      - name: Trigger create release workflow
-#        if: steps.semantic_release.outputs.new_release_published == 'true'
-#        run: |
-#          repo_owner=${{ inputs.SWIFT_PACKAGE_REPO_OWNER }}
-#          repo_name=${{ inputs.SWIFT_PACKAGE_REPO }}
-#          event_type="trigger-release-workflow"
-#
-#          release_version=${{ steps.semantic_release.outputs.new_release_version }}
-#          checksum=${{ steps.publish_xcframework.outputs.checksum }}
-#
-#          curl -X POST \
-#            -H "Authorization: Bearer ${{ secrets.GH_PUBLISH_TOKEN }}" \
-#            -H "Accept: application/vnd.github.everest-preview+json" \
-#            -H "Content-Type: application/json" \
-#            https://api.github.com/repos/$repo_owner/$repo_name/dispatches \
-#            --data "{\"event_type\": \"$event_type\", \"client_payload\": {\"release_version\": \"$release_version\", \"checksum\": \"$checksum\"}}"
-
       - name: Publish Android library
-        if: steps.semantic_release.outputs.new_release_published == 'true'
         uses: burrunan/gradle-cache-action@v1.12
         env:
           GH_PUBLISH_USERNAME: ${{ secrets.GH_PUBLISH_USERNAME }}
           GH_PUBLISH_TOKEN: ${{ secrets.GH_PUBLISH_TOKEN }}
-          VERSION: ${{ steps.semantic_release.outputs.new_release_version }}
+          VERSION: ${{ steps.get_tag.outputs.TAG }}
         with:
           arguments: ${{ inputs.ANDROID_PUBLISH_TASK }}
           gradle-version: wrapper
           execution-only-caches: true
-
-#      - name: Notify Slack channel about release
-#        if: steps.semantic_release.outputs.new_release_published == 'true' && startsWith(steps.semantic_release.outputs.new_release_version, 'dev-') == false
-#        id: slack-update
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          payload: |
-#            {
-#              "text": "MultiplatformLib version ${{ steps.semantic_release.outputs.new_release_version }} is released!\nSee release notes: https://github.com/superbet-group/multiplatform.lib/releases/tag/v${{ steps.semantic_release.outputs.new_release_version }}"
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_UPDATES_WEBHOOK_URL }}
