@@ -1,4 +1,6 @@
 # multiplatform.workflows
+DEPRECATED. Will be deleted soon. 
+
 Repository hosting the Github Actions workflows used for building Multiplatform libraries.
 
 ## Notes
